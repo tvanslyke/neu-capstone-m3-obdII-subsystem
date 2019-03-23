@@ -1,0 +1,6 @@
+[submodule "Freematics"]
+	path = Freematics
+	url = https://github.com/stanleyhuangyc/Freematics.git
+[submodule "units"]
+	path = units
+	url = https://github.com/nholthaus/units.git
