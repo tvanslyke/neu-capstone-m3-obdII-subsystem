@@ -2,12 +2,14 @@
 #define M3_OBD_PID_H
 
 #include <cstdint>
+#include <bitset>
+#include <units.h>
 
 namespace m3::obd {
 
 enum class PID: unsigned char {
 	SupportedPids0                                                      = 0x0,
-	MonitorStatus                                                       = 0x1,
+	MonitorStatusSinceDTCCleared                                        = 0x1,
 	FreezeDTC                                                           = 0x2,
 	FuelSystemStatus                                                    = 0x3,
 	CalculatedEngineLoad                                                = 0x4,
@@ -172,6 +174,10 @@ enum class PID: unsigned char {
 	Odometer                                                            = 0xA6,
 	SupportedPids6                                                      = 0xC0
 };
+
+constexpr PID pid_from_code(unsigned char code) {
+	return static_cast<PID>(code);
+}
 
 using namespace units::literals;
 
@@ -1175,6 +1181,7 @@ struct pid_unit_traits<PID::ReferenceTorque> {
 		return 256u * A + B;
 	}
 };
+
 template <>
 struct pid_unit_traits<PID::EnginePercentTorqueData> {
 	struct type {
@@ -1197,6 +1204,61 @@ struct pid_unit_traits<PID::EnginePercentTorqueData> {
 		};
 	}
 };
+
+template <>
+struct pid_unit_traits<PID::ExhaustGasTemperatureBank1> {
+	using type = std::array<std::optional<units::temperature::celsius_t>, 4u>;
+
+	static constexpr type minm = type{   -40,    -40,    -40,    -40};
+	static constexpr type maxm = type{6513.5, 6513.5, 6513.5, 6513.5};
+
+	static constexpr type decode(
+		unsigned char A,
+		unsigned char B, unsigned char C,
+		unsigned char D, unsigned char E
+		unsigned char F, unsigned char G,
+		unsigned char H, unsigned char I
+	) noexcept {
+		type result;
+		if(A & 0b0001u) {
+			result[0] = units::temperature::celsius_t(256u * B + C) / 10
+				- units::temperature::celsius_t(40);
+		}
+		if(A & 0b0010u) {
+			result[1] = units::temperature::celsius_t(256u * D + E) / 10
+				- units::temperature::celsius_t(40);
+		}
+		if(A & 0b0100u) {
+			result[2] = units::temperature::celsius_t(256u * F + G) / 10
+				- units::temperature::celsius_t(40);
+		}
+		if(A & 0b1000u) {
+			result[3] = units::temperature::celsius_t(256u * H + I) / 10
+				- units::temperature::celsius_t(40);
+		}
+		return result;
+	}
+};
+
+template <>
+struct pid_unit_traits<PID::ExhaustGasTemperatureBank2> {
+	using type = std::array<std::optional<units::temperature::celsius_t>, 4u>;
+
+	static constexpr type minm = type{   -40,    -40,    -40,    -40};
+	static constexpr type maxm = type{6513.5, 6513.5, 6513.5, 6513.5};
+
+	static constexpr type decode(
+		unsigned char A,
+		unsigned char B, unsigned char C,
+		unsigned char D, unsigned char E
+		unsigned char F, unsigned char G,
+		unsigned char H, unsigned char I
+	) noexcept {
+		pid_unit_traits<PID::ExhaustGasTemperatureBank1>::decode(
+			A, B, C, D, E, F, G, H, I
+		);
+	}
+
 template <>
 struct pid_unit_traits<PID::ThrottlePositionG> {
 	using type = units::dimensionless::scalar_t;
@@ -1221,106 +1283,106 @@ struct pid_unit_traits<PID::EngineFrictionPercentTorque> {
 inline constexpr auto std::array<unsigned char, 256u> pid_encoding_sizes = [](){
 	// This is all exectuted at compile-time; don't worry about the stack!
 	std::array<unsigned char, 256u> encoding_sizes{0u};
-	encoding_sizes[0] = 4;
-	encoding_sizes[1] = 4;
-	encoding_sizes[2] = 2;
-	encoding_sizes[3] = 2;
-	encoding_sizes[4] = 1;
-	encoding_sizes[5] = 1;
-	encoding_sizes[6] = 1;
-	encoding_sizes[7] = 1;
-	encoding_sizes[8] = 1;
-	encoding_sizes[9] = 1;
-	encoding_sizes[10] = 1;
-	encoding_sizes[11] = 1;
-	encoding_sizes[12] = 2;
-	encoding_sizes[13] = 1;
-	encoding_sizes[14] = 1;
-	encoding_sizes[15] = 1;
-	encoding_sizes[16] = 2;
-	encoding_sizes[17] = 1;
-	encoding_sizes[18] = 1;
-	encoding_sizes[19] = 1;
-	encoding_sizes[20] = 2;
-	encoding_sizes[21] = 2;
-	encoding_sizes[22] = 2;
-	encoding_sizes[23] = 2;
-	encoding_sizes[24] = 2;
-	encoding_sizes[25] = 2;
-	encoding_sizes[26] = 2;
-	encoding_sizes[27] = 2;
-	encoding_sizes[28] = 1;
-	encoding_sizes[29] = 1;
-	encoding_sizes[30] = 1;
-	encoding_sizes[31] = 2;
-	encoding_sizes[32] = 4;
-	encoding_sizes[33] = 2;
-	encoding_sizes[34] = 2;
-	encoding_sizes[35] = 2;
-	encoding_sizes[36] = 4;
-	encoding_sizes[37] = 4;
-	encoding_sizes[38] = 4;
-	encoding_sizes[39] = 4;
-	encoding_sizes[40] = 4;
-	encoding_sizes[41] = 4;
-	encoding_sizes[42] = 4;
-	encoding_sizes[43] = 4;
-	encoding_sizes[44] = 1;
-	encoding_sizes[45] = 1;
-	encoding_sizes[46] = 1;
-	encoding_sizes[47] = 1;
-	encoding_sizes[48] = 1;
-	encoding_sizes[49] = 2;
-	encoding_sizes[50] = 2;
-	encoding_sizes[51] = 1;
-	encoding_sizes[52] = 4;
-	encoding_sizes[53] = 4;
-	encoding_sizes[54] = 4;
-	encoding_sizes[55] = 4;
-	encoding_sizes[56] = 4;
-	encoding_sizes[57] = 4;
-	encoding_sizes[58] = 4;
-	encoding_sizes[59] = 4;
-	encoding_sizes[60] = 2;
-	encoding_sizes[61] = 2;
-	encoding_sizes[62] = 2;
-	encoding_sizes[63] = 2;
-	encoding_sizes[64] = 4;
-	encoding_sizes[65] = 4;
-	encoding_sizes[66] = 2;
-	encoding_sizes[67] = 2;
-	encoding_sizes[68] = 2;
-	encoding_sizes[69] = 1;
-	encoding_sizes[70] = 1;
-	encoding_sizes[71] = 1;
-	encoding_sizes[72] = 1;
-	encoding_sizes[73] = 1;
-	encoding_sizes[74] = 1;
-	encoding_sizes[75] = 1;
-	encoding_sizes[76] = 1;
-	encoding_sizes[77] = 2;
-	encoding_sizes[78] = 2;
-	encoding_sizes[79] = 4;
-	encoding_sizes[80] = 4;
-	encoding_sizes[81] = 1;
-	encoding_sizes[82] = 1;
-	encoding_sizes[83] = 2;
-	encoding_sizes[84] = 2;
-	encoding_sizes[85] = 2;
-	encoding_sizes[86] = 2;
-	encoding_sizes[87] = 2;
-	encoding_sizes[88] = 2;
-	encoding_sizes[89] = 2;
-	encoding_sizes[90] = 1;
-	encoding_sizes[91] = 1;
-	encoding_sizes[92] = 1;
-	encoding_sizes[93] = 2;
-	encoding_sizes[94] = 2;
-	encoding_sizes[95] = 1;
-	encoding_sizes[96] = 4;
-	encoding_sizes[97] = 1;
-	encoding_sizes[98] = 1;
-	encoding_sizes[99] = 2;
+	encoding_sizes[0]   = 4;
+	encoding_sizes[1]   = 4;
+	encoding_sizes[2]   = 2;
+	encoding_sizes[3]   = 2;
+	encoding_sizes[4]   = 1;
+	encoding_sizes[5]   = 1;
+	encoding_sizes[6]   = 1;
+	encoding_sizes[7]   = 1;
+	encoding_sizes[8]   = 1;
+	encoding_sizes[9]   = 1;
+	encoding_sizes[10]  = 1;
+	encoding_sizes[11]  = 1;
+	encoding_sizes[12]  = 2;
+	encoding_sizes[13]  = 1;
+	encoding_sizes[14]  = 1;
+	encoding_sizes[15]  = 1;
+	encoding_sizes[16]  = 2;
+	encoding_sizes[17]  = 1;
+	encoding_sizes[18]  = 1;
+	encoding_sizes[19]  = 1;
+	encoding_sizes[20]  = 2;
+	encoding_sizes[21]  = 2;
+	encoding_sizes[22]  = 2;
+	encoding_sizes[23]  = 2;
+	encoding_sizes[24]  = 2;
+	encoding_sizes[25]  = 2;
+	encoding_sizes[26]  = 2;
+	encoding_sizes[27]  = 2;
+	encoding_sizes[28]  = 1;
+	encoding_sizes[29]  = 1;
+	encoding_sizes[30]  = 1;
+	encoding_sizes[31]  = 2;
+	encoding_sizes[32]  = 4;
+	encoding_sizes[33]  = 2;
+	encoding_sizes[34]  = 2;
+	encoding_sizes[35]  = 2;
+	encoding_sizes[36]  = 4;
+	encoding_sizes[37]  = 4;
+	encoding_sizes[38]  = 4;
+	encoding_sizes[39]  = 4;
+	encoding_sizes[40]  = 4;
+	encoding_sizes[41]  = 4;
+	encoding_sizes[42]  = 4;
+	encoding_sizes[43]  = 4;
+	encoding_sizes[44]  = 1;
+	encoding_sizes[45]  = 1;
+	encoding_sizes[46]  = 1;
+	encoding_sizes[47]  = 1;
+	encoding_sizes[48]  = 1;
+	encoding_sizes[49]  = 2;
+	encoding_sizes[50]  = 2;
+	encoding_sizes[51]  = 1;
+	encoding_sizes[52]  = 4;
+	encoding_sizes[53]  = 4;
+	encoding_sizes[54]  = 4;
+	encoding_sizes[55]  = 4;
+	encoding_sizes[56]  = 4;
+	encoding_sizes[57]  = 4;
+	encoding_sizes[58]  = 4;
+	encoding_sizes[59]  = 4;
+	encoding_sizes[60]  = 2;
+	encoding_sizes[61]  = 2;
+	encoding_sizes[62]  = 2;
+	encoding_sizes[63]  = 2;
+	encoding_sizes[64]  = 4;
+	encoding_sizes[65]  = 4;
+	encoding_sizes[66]  = 2;
+	encoding_sizes[67]  = 2;
+	encoding_sizes[68]  = 2;
+	encoding_sizes[69]  = 1;
+	encoding_sizes[70]  = 1;
+	encoding_sizes[71]  = 1;
+	encoding_sizes[72]  = 1;
+	encoding_sizes[73]  = 1;
+	encoding_sizes[74]  = 1;
+	encoding_sizes[75]  = 1;
+	encoding_sizes[76]  = 1;
+	encoding_sizes[77]  = 2;
+	encoding_sizes[78]  = 2;
+	encoding_sizes[79]  = 4;
+	encoding_sizes[80]  = 4;
+	encoding_sizes[81]  = 1;
+	encoding_sizes[82]  = 1;
+	encoding_sizes[83]  = 2;
+	encoding_sizes[84]  = 2;
+	encoding_sizes[85]  = 2;
+	encoding_sizes[86]  = 2;
+	encoding_sizes[87]  = 2;
+	encoding_sizes[88]  = 2;
+	encoding_sizes[89]  = 2;
+	encoding_sizes[90]  = 1;
+	encoding_sizes[91]  = 1;
+	encoding_sizes[92]  = 1;
+	encoding_sizes[93]  = 2;
+	encoding_sizes[94]  = 2;
+	encoding_sizes[95]  = 1;
+	encoding_sizes[96]  = 4;
+	encoding_sizes[97]  = 1;
+	encoding_sizes[98]  = 1;
+	encoding_sizes[99]  = 2;
 	encoding_sizes[100] = 5;
 	encoding_sizes[101] = 2;
 	encoding_sizes[102] = 5;
@@ -1389,10 +1451,420 @@ inline constexpr auto std::array<unsigned char, 256u> pid_encoding_sizes = [](){
 	return encoding_sizes;
 }();
 
+template <PID BasePid>
+struct PidSupportMap {
+	static_assert(
+		Pid == PID::SupportedPids0
+		or Pid == PID::SupportedPids1
+		or Pid == PID::SupportedPids2
+		or Pid == PID::SupportedPids3
+		or Pid == PID::SupportedPids4
+		or Pid == PID::SupportedPids5
+		or Pid == PID::SupportedPids6
+	);
+
+	constexpr pid_support_map(std::uint_least32_t mp):
+		map_(mp)
+	{
+		
+	}
+
+	constexpr bool operator[](PID pid) const {
+		assert(pid > BasePid);
+		auto ofs = (static_cast<unsigned char>(pid) - static_cast<unsigned char>(BasePid));
+		assert(ofs <= 32u);
+		ofs -= 1u;
+		auto mp = map_;
+		mp >>= (31u - ofs);
+		return (mp & 0x01u) == 0x01u;
+	}
+
+private:
+	std::uint_least32_t map_;
+};
+
+template <PID Pid>
+struct pid_bitwise_traits {
+	using type = void;
+};
+
+template <PID Pid>
+struct pid_bitwise_support_traits {
+	using type = PidSupportMap<Pid>;
+	static constexpr type decode(unsigned char A, unsigned char B, unsigned char C, unsigned char D) noexcept {
+		return type(
+			  (static_cast<std::uint_least32_t>(A) << 24u)
+			| (static_cast<std::uint_least32_t>(B) << 16u)
+			| (static_cast<std::uint_least32_t>(C) <<  8u)
+			| (static_cast<std::uint_least32_t>(D) <<  0u)
+		);
+	}
+};
+
+template <>
+struct pid_bitwise_traits<PID::SupportedPids0>:
+	pid_bitwise_support_traits<PID::SupportedPids0>
+{
+	using type = pid_bitwise_support_traits<PID::SupportedPids0>::type;
+};
+
+template <>
+struct pid_bitwise_traits<PID::SupportedPids1>:
+	pid_bitwise_support_traits<PID::SupportedPids1>
+{
+	using type = pid_bitwise_support_traits<PID::SupportedPids1>::type;
+};
+
+template <>
+struct pid_bitwise_traits<PID::SupportedPids2>:
+	pid_bitwise_support_traits<PID::SupportedPids2>
+{
+	using type = pid_bitwise_support_traits<PID::SupportedPids2>::type;
+};
+
+template <>
+struct pid_bitwise_traits<PID::SupportedPids3>:
+	pid_bitwise_support_traits<PID::SupportedPids3>
+{
+	using type = pid_bitwise_support_traits<PID::SupportedPids3>::type;
+};
+
+template <>
+struct pid_bitwise_traits<PID::SupportedPids4>:
+	pid_bitwise_support_traits<PID::SupportedPids4>
+{
+	using type = pid_bitwise_support_traits<PID::SupportedPids4>::type;
+};
+
+template <>
+struct pid_bitwise_traits<PID::SupportedPids5>:
+	pid_bitwise_support_traits<PID::SupportedPids5>
+{
+	using type = pid_bitwise_support_traits<PID::SupportedPids5>::type;
+};
+
+template <>
+struct pid_bitwise_traits<PID::SupportedPids6>:
+	pid_bitwise_support_traits<PID::SupportedPids6>
+{
+	using type = pid_bitwise_support_traits<PID::SupportedPids6>::type;
+};
+
+struct SparkIgnitionMonitorStatus {
+	bool egr_system_test_available           : 1u; // C7
+	bool oxygen_sensor_heater_test_available : 1u; // C6
+	bool oxygen_sensor_test_available        : 1u; // C5
+	bool ac_refrigerant_test_available       : 1u; // C4
+	bool secondary_air_system_test_available : 1u; // C3
+	bool evaporative_system_test_available   : 1u; // C2
+	bool heated_catalyst_test_available      : 1u; // C1
+	bool catalyst_test_available             : 1u; // C0
+
+	bool egr_system_test_incomplete           : 1u; // D7
+	bool oxygen_sensor_heater_test_incomplete : 1u; // D6
+	bool oxygen_sensor_test_incomplete        : 1u; // D5
+	bool ac_refrigerant_test_incomplete       : 1u; // D4
+	bool secondary_air_system_test_incomplete : 1u; // D3
+	bool evaporative_system_test_incomplete   : 1u; // D2
+	bool heated_catalyst_test_incomplete      : 1u; // D1
+	bool catalyst_test_incomplete             : 1u; // D0
+};
+
+struct CompressionIgnitionMonitorStatus {
+	bool egr_and_or_vvt_system_test_available : 1u; // C7
+	bool pm_filter_monitoring_test_available  : 1u; // C6
+	bool exhaust_gas_sensor_test_available    : 1u; // C5
+	bool boost_pressure_test_available        : 1u; // C3
+	bool nox_scr_monitor_test_available       : 1u; // C1
+	bool nmhc_catalyst_test_available         : 1u; // C0
+
+	bool egr_and_or_vvt_system_test_incomplete : 1u; // D7
+	bool pm_filter_monitoring_test_incomplete  : 1u; // D6
+	bool exhaust_gas_sensor_test_incomplete    : 1u; // D5
+	bool boost_pressure_test_incomplete        : 1u; // D3
+	bool nox_scr_monitor_test_incomplete       : 1u; // D1
+	bool nmhc_catalyst_test_incomplete         : 1u; // D0
+};
+
+enum class IgnitionMonitorSupport: bool {
+	SparkIgnition       = false,
+	CompressionIgnition = true
+};
+
+struct MonitorStatus {
+	bool components_test_incomplete  : 1u; // B6
+	bool fuel_system_test_incomplete : 1u; // B5
+	bool misfire_test_incomplete     : 1u; // B4
+	bool components_test_available   : 1u; // B2
+	bool fuel_system_test_available  : 1u; // B1
+	bool misfire_test_available      : 1u; // B0
+	
+	IgnitionMonitorSupport ignition_monitor_support : 1u; // B3
+
+	union {
+		SparkIgnitionMonitor       spark_ignition_monitor;
+		CompressionIgnitionMonitor compression_ignition_monitor;
+	}
+
+	static constexpr MonitorStatus decode(unsigned char A, unsigned char B, unsigned char C, unsigned char D) noexcept {
+		bool components_test_incomplete   = (B >> 6) & 0x01u; 
+		bool fuel_system_test_incomplete  = (B >> 5) & 0x01u;
+		bool misfire_test_incomplete      = (B >> 4) & 0x01u;
+		bool components_test_available    = (B >> 2) & 0x01u;
+		bool fuel_system_test_available   = (B >> 1) & 0x01u;
+		bool misfire_test_available       = (B >> 0) & 0x01u;
+		auto ignition_monitor_support     = static_cast<IgnitionMonitorSupport>((B >> 3) & 0x01u);
+
+		if(result.ignition_monitor_support ==  IgnitionMonitorSupport::SparkIgnition) {
+			SparkIgnitionMonitor spark;
+			spark.egr_system_test_available           = (C >> 7) & 0x01u;
+			spark.oxygen_sensor_heater_test_available = (C >> 6) & 0x01u;
+			spark.oxygen_sensor_test_available        = (C >> 5) & 0x01u;
+			spark.ac_refrigerant_test_available       = (C >> 4) & 0x01u;
+			spark.secondary_air_system_test_available = (C >> 3) & 0x01u;
+			spark.evaporative_system_test_available   = (C >> 2) & 0x01u;
+			spark.heated_catalyst_test_available      = (C >> 1) & 0x01u;
+			spark.catalyst_test_available             = (C >> 0) & 0x01u;
+
+			spark.egr_system_test_incomplete            = (D >> 7) & 0x01u;
+			spark.oxygen_sensor_heater_test_incomplete  = (D >> 6) & 0x01u;
+			spark.oxygen_sensor_test_incomplete         = (D >> 5) & 0x01u;
+			spark.ac_refrigerant_test_incomplete        = (D >> 4) & 0x01u;
+			spark.secondary_air_system_test_incomplete  = (D >> 3) & 0x01u;
+			spark.evaporative_system_test_incomplete    = (D >> 2) & 0x01u;
+			spark.heated_catalyst_test_incomplete       = (D >> 1) & 0x01u;
+			spark.catalyst_test_incomplete              = (D >> 0) & 0x01u;
+			return MonitorStatus{
+				components_test_incomplete,
+				fuel_system_test_incomplete,
+				misfire_test_incomplete,
+				components_test_available,
+				fuel_system_test_available,
+				misfire_test_available,
+				ignition_monitor_support,
+				{ spark }
+			};
+		} else {
+			CompressionIgnitionMonitor compression;
+			compression.egr_and_or_vvt_system_test_available = (C >> 7) & 0x01u; 
+			compression.pm_filter_monitoring_test_available  = (C >> 6) & 0x01u;
+			compression.exhaust_gas_sensor_test_available    = (C >> 5) & 0x01u;
+			compression.boost_pressure_test_available        = (C >> 3) & 0x01u;
+			compression.nox_scr_monitor_test_available       = (C >> 1) & 0x01u;
+			compression.nmhc_catalyst_test_available         = (C >> 0) & 0x01u;
+
+			compression.egr_and_or_vvt_system_test_incomplete = (D >> 7) & 0x01u;
+			compression.pm_filter_monitoring_test_incomplete  = (D >> 6) & 0x01u;
+			compression.exhaust_gas_sensor_test_incomplete    = (D >> 5) & 0x01u;
+			compression.boost_pressure_test_incomplete        = (D >> 3) & 0x01u;
+			compression.nox_scr_monitor_test_incomplete       = (D >> 1) & 0x01u;
+			compression.nmhc_catalyst_test_incomplete         = (D >> 0) & 0x01u;
+			compression_ignition_monitor = spark;
+			return MonitorStatus{
+				components_test_incomplete,
+				fuel_system_test_incomplete,
+				misfire_test_incomplete,
+				components_test_available,
+				fuel_system_test_available,
+				misfire_test_available,
+				ignition_monitor_support,
+				{ compression }	
+			};
+		}
+	}
+};
+
+template <>
+struct pid_bitwise_traits<PID::MonitorStatusSinceDTCCleared> {
+	struct type {
+		bool          check_engine_light_on             : 1u; // A7
+		unsigned char diagnostic_code_count             : 7u; // A6-A0
+		MonitorStatus monitor_status;
+	};
+	static constexpr type decode(unsigned char A, unsigned char B, unsigned char C, unsigned char D) noexcept {
+		return type{
+			(A >> 7u) & 0x01u,
+			A & 0b0111'1111u,
+			{ MontorStatus::decode(A, B, C, D) }
+		};
+	}
+};
+
+enum class FuelSystemStatus: unsigned char {
+	OpenLoopInsufficientEngineTemperature = 1u,
+	ClosedLoopUsingOxygenSensorFeedback  = 2u,
+	OpenLoopEngineLoadOrFuelCut = 4u,
+	OpenLoopSystemFailure = 8u,
+	CloseLoopUsingOxygenSensorWithFeedbackFault = 16u
+};
+
+template <>
+struct pid_bitwise_traits<PID::FuelSystemStatus> {
+	using type = std::pair<FuelSystemStatus, FuelSystemStatus>;
+	
+	static constexpr type decode(unsigned char A, unsigned char B) noexcept {
+		return type{static_cast<FuelSystemStatus>(A), static_cast<FuelSystemStatus>(B)};
+	}
+};
+
+enum class SecondaryAirStatus: unsigned char {
+	Upstream = 1u,
+	DownstreamOfCatalyticConverter = 2u,
+	ExternalOrOff = 4u,
+	PumpCommandedOnForDiagnostics = 8u
+};
+
+template <>
+struct pid_bitwise_traits<PID::CommandedSecondaryAirStatus> {
+	using type = SecondaryAirStatus;
+	
+	static constexpr type decode(unsigned char A) noexcept {
+		return static_cast<type>(A);
+	}
+};
+
+enum class OBDStandard: unsigned char {
+	OBD_II_CARB          = 1,
+	OBD_EPA              = 2,
+	OBD_and_OBD_II       = 3,
+	OBD_I                = 4,
+	NonCompliant         = 5,
+	EOBD                 = 6,
+	EOBD_and_OBD_II      = 7,
+	EOBD_and_OBD         = 8,
+	EOBD_OBD_and_OBD_II  = 9,
+	JOBD                 = 10,
+	JOBD_and_OBD_II      = 11,
+	JOBD_and_EOBD        = 12,
+	JOBD_EOBD_and_OBD_II = 13,
+	EMD                  = 17,
+	EMD_Plus             = 18,
+	HD_OBD_C             = 19,
+	HD_OBD               = 20,
+	WWH_OBD              = 21,
+	HD_EOBD_I            = 23,
+	HD_EOBD_I_N          = 24,
+	HD_EOBD_II           = 25,
+	HD_EOBD_II_N         = 26,
+	OBDBr_1              = 28,
+	OBDBr_2              = 29,
+	KOBD                 = 30,
+	IOBD_I               = 31,
+	IOBD_II              = 32,
+	HD_EOBD_IV           = 33
+};
+
+template <>
+struct pid_bitwise_traits<PID::SupportedOBDStandards> {
+	using type = OBDStandard;
+	
+	static constexpr type decode(unsigned char A) noexcept {
+		return static_cast<type>(A);
+	}
+};
+
+enum class PTOStatus: bool {
+	Inactive = false,
+	Active = true
+};
+
+template <>
+struct pid_bitwise_traits<PID::AuxiliaryInputStatus> {
+	using type = PTOStatus;
+	
+	static constexpr type decode(unsigned char A) noexcept {
+		return static_cast<type>(static_cast<bool>(A & 0x01));
+	}
+};
+
+template <>
+struct pid_bitwise_traits<PID::MonitorStatusThisDriveCycle> {
+	using type = MonitorStatus;
+	
+	static constexpr type decode(unsigned char A, unsigned char B, unsigned char C, unsigned char D) noexcept {
+		return MonitorStatus::decode(A, B, C, D);
+	}
+};
+
+enum class FuelType {
+	Not available                            = 0,
+	Gasoline                                 = 1,
+	Methanol                                 = 2,
+	Ethanol                                  = 3,
+	Diesel                                   = 4,
+	LPG                                      = 5,
+	CNG                                      = 6,
+	Propane                                  = 7,
+	Electric                                 = 8,
+	BifuelRunningGasoline                    = 9,
+	BifuelRunningMethanol                    = 10,
+	BifuelRunningEthanol                     = 11,
+	BifuelRunningLPG                         = 12,
+	BifuelRunningCNG                         = 13,
+	BifuelRunningPropane                     = 14,
+	BifuelRunningElectricity                 = 15,
+	BifuelRunningElectricCombustionEngine    = 16,
+	HybridGasoline                           = 17,
+	HybridEthanol                            = 18,
+	HybridDiesel                             = 19,
+	HybridElectric                           = 20,
+	HybridRunningElectricAndCombustionEngine = 21,
+	HybridRegenerative                       = 22,
+	BifuelRunningDiesel                      = 23
+};
+
+template <>
+struct pid_bitwise_traits<PID::FuelType> {
+	using type = FuelType;
+	
+	static constexpr type decode(unsigned char A) noexcept {
+		return static_cast<type>(A);
+	}
+};
+
+struct CompressedDTC {
+	unsigned char ch1: 2u;
+	unsigned char ch2: 2u;
+	unsigned char ch3: 4u;
+	unsigned char ch4: 4u;
+	unsigned char ch5: 4u;
+
+	constexpr std::array<char, 6> to_string() const {
+		return {
+			("PCBU")[ch1],
+			("0123")[ch2],
+			("0123456789ABCDEF")[ch3],
+			("0123456789ABCDEF")[ch4],
+			("0123456789ABCDEF")[ch5],
+			'\0'
+		};
+	}
+};
+
 template <PID Pid>
 struct pid_traits {
-	using unit_traits = pid_unit_traits<Pid>;
-	static constexpr bool has_known_encoding = not std::is_same_v<typename unit_traits::type, void>;
+	using unit_traits    = pid_unit_traits<Pid>;
+	using bitwise_traits = pid_unit_traits<Pid>;
+
+	static constexpr bool has_unit_encoding
+		= (not std::is_same_v<typename unit_traits::type, void>);
+
+	static constexpr bool has_bitwise_encoding
+		= (not std::is_same_v<typename bitwise_traits::type, void>);
+
+	static constexpr bool has_known_encoding
+		= has_unit_encoding and has_bitwise_encoding;
+	
+	static constexpr auto decode = []() {
+		if constexpr(has_unit_encoding) {
+			return &unit_traits::decode;
+		} else if constexpr(has_bitwise_encoding) {
+			return &bitwise_traits::decode;
+		} else {
+			return static_cast<void(*)() noexcept>(nullptr);
+		}
+	}();
+
 	static constexpr std::optional<unsigned char> encoding_size
 		= pid_encoding_sizes[static_cast<unsigned char>(Pid)];
 };
