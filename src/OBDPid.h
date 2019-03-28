@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <bitset>
 #include <units.h>
+#include <type_traits>
 
 namespace m3::obd {
 
@@ -1868,6 +1869,345 @@ struct pid_traits {
 	static constexpr std::optional<unsigned char> encoding_size
 		= pid_encoding_sizes[static_cast<unsigned char>(Pid)];
 };
+
+
+template <class Visitor>
+constexpr decltype(auto) visit_obd_pid(Visitor visitor, PID pid) {
+	switch(pid) {
+	default:
+		assert(!"Bad OBD PID value.");
+	case PID::SupportedPids0:
+		return visitor(std::integral_constant<PID, PID::SupportedPids0>{});
+	case PID::MonitorStatusSinceDTCCleared:
+		return visitor(std::integral_constant<PID, PID::MonitorStatusSinceDTCCleared>{});
+	case PID::FreezeDTC:
+		return visitor(std::integral_constant<PID, PID::FreezeDTC>{});
+	case PID::FuelSystemStatus:
+		return visitor(std::integral_constant<PID, PID::FuelSystemStatus>{});
+	case PID::CalculatedEngineLoad:
+		return visitor(std::integral_constant<PID, PID::CalculatedEngineLoad>{});
+	case PID::EngineCoolantTemperature:
+		return visitor(std::integral_constant<PID, PID::EngineCoolantTemperature>{});
+	case PID::ShortTermFuelTrimBank1:
+		return visitor(std::integral_constant<PID, PID::ShortTermFuelTrimBank1>{});
+	case PID::LongTermFuelTrimBank1:
+		return visitor(std::integral_constant<PID, PID::LongTermFuelTrimBank1>{});
+	case PID::ShortTermFuelTrimBank2:
+		return visitor(std::integral_constant<PID, PID::ShortTermFuelTrimBank2>{});
+	case PID::LongTermFuelTrimBank2:
+		return visitor(std::integral_constant<PID, PID::LongTermFuelTrimBank2>{});
+	case PID::FuelPressure:
+		return visitor(std::integral_constant<PID, PID::FuelPressure>{});
+	case PID::IntakeManifoldAbsolutePressure:
+		return visitor(std::integral_constant<PID, PID::IntakeManifoldAbsolutePressure>{});
+	case PID::EngineRPM:
+		return visitor(std::integral_constant<PID, PID::EngineRPM>{});
+	case PID::VehicleSpeed:
+		return visitor(std::integral_constant<PID, PID::VehicleSpeed>{});
+	case PID::TimingAdvance:
+		return visitor(std::integral_constant<PID, PID::TimingAdvance>{});
+	case PID::IntakeAirTemperature:
+		return visitor(std::integral_constant<PID, PID::IntakeAirTemperature>{});
+	case PID::MAFAirFlowRate:
+		return visitor(std::integral_constant<PID, PID::MAFAirFlowRate>{});
+	case PID::ThrottlePosition:
+		return visitor(std::integral_constant<PID, PID::ThrottlePosition>{});
+	case PID::CommandedSecondaryAirStatus:
+		return visitor(std::integral_constant<PID, PID::CommandedSecondaryAirStatus>{});
+	case PID::OxygenSensorsPresent2Banks:
+		return visitor(std::integral_constant<PID, PID::OxygenSensorsPresent2Banks>{});
+	case PID::OxygenSensor1VoltageAndShortTermFuelTrim:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor1VoltageAndShortTermFuelTrim>{});
+	case PID::OxygenSensor2VoltageAndShortTermFuelTrim:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor2VoltageAndShortTermFuelTrim>{});
+	case PID::OxygenSensor3VoltageAndShortTermFuelTrim:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor3VoltageAndShortTermFuelTrim>{});
+	case PID::OxygenSensor4VoltageAndShortTermFuelTrim:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor4VoltageAndShortTermFuelTrim>{});
+	case PID::OxygenSensor5VoltageAndShortTermFuelTrim:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor5VoltageAndShortTermFuelTrim>{});
+	case PID::OxygenSensor6VoltageAndShortTermFuelTrim:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor6VoltageAndShortTermFuelTrim>{});
+	case PID::OxygenSensor7VoltageAndShortTermFuelTrim:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor7VoltageAndShortTermFuelTrim>{});
+	case PID::OxygenSensor8VoltageAndShortTermFuelTrim:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor8VoltageAndShortTermFuelTrim>{});
+	case PID::SupportedOBDStandards:
+		return visitor(std::integral_constant<PID, PID::SupportedOBDStandards>{});
+	case PID::OxygenSensorsPresent4Banks:
+		return visitor(std::integral_constant<PID, PID::OxygenSensorsPresent4Banks>{});
+	case PID::AuxiliaryInputStatus:
+		return visitor(std::integral_constant<PID, PID::AuxiliaryInputStatus>{});
+	case PID::RunTimeSinceEngineStart:
+		return visitor(std::integral_constant<PID, PID::RunTimeSinceEngineStart>{});
+	case PID::SupportedPids1:
+		return visitor(std::integral_constant<PID, PID::SupportedPids1>{});
+	case PID::DistanceTraveledWithMIL:
+		return visitor(std::integral_constant<PID, PID::DistanceTraveledWithMIL>{});
+	case PID::FuelRailPressure:
+		return visitor(std::integral_constant<PID, PID::FuelRailPressure>{});
+	case PID::FuelRailGaugePressure:
+		return visitor(std::integral_constant<PID, PID::FuelRailGaugePressure>{});
+	case PID::OxygenSensor1FuelAirEquivalenceRatioAndVoltage:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor1FuelAirEquivalenceRatioAndVoltage>{});
+	case PID::OxygenSensor2FuelAirEquivalenceRatioAndVoltage:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor2FuelAirEquivalenceRatioAndVoltage>{});
+	case PID::OxygenSensor3FuelAirEquivalenceRatioAndVoltage:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor3FuelAirEquivalenceRatioAndVoltage>{});
+	case PID::OxygenSensor4FuelAirEquivalenceRatioAndVoltage:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor4FuelAirEquivalenceRatioAndVoltage>{});
+	case PID::OxygenSensor5FuelAirEquivalenceRatioAndVoltage:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor5FuelAirEquivalenceRatioAndVoltage>{});
+	case PID::OxygenSensor6FuelAirEquivalenceRatioAndVoltage:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor6FuelAirEquivalenceRatioAndVoltage>{});
+	case PID::OxygenSensor7FuelAirEquivalenceRatioAndVoltage:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor7FuelAirEquivalenceRatioAndVoltage>{});
+	case PID::OxygenSensor8FuelAirEquivalenceRatioAndVoltage:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor8FuelAirEquivalenceRatioAndVoltage>{});
+	case PID::CommandedEGR:
+		return visitor(std::integral_constant<PID, PID::CommandedEGR>{});
+	case PID::EGRError:
+		return visitor(std::integral_constant<PID, PID::EGRError>{});
+	case PID::CommandedEvaporativePurge:
+		return visitor(std::integral_constant<PID, PID::CommandedEvaporativePurge>{});
+	case PID::FuelTankLevelInput:
+		return visitor(std::integral_constant<PID, PID::FuelTankLevelInput>{});
+	case PID::WarmUpsSinceCodesCleared:
+		return visitor(std::integral_constant<PID, PID::WarmUpsSinceCodesCleared>{});
+	case PID::DistanceTraveledSinceCodesCleared:
+		return visitor(std::integral_constant<PID, PID::DistanceTraveledSinceCodesCleared>{});
+	case PID::EvapSystemVaporPressure:
+		return visitor(std::integral_constant<PID, PID::EvapSystemVaporPressure>{});
+	case PID::AbsoluteBarometricPressure:
+		return visitor(std::integral_constant<PID, PID::AbsoluteBarometricPressure>{});
+	case PID::OxygenSensor1FuelAirEquivalenceRatioAndCurrent:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor1FuelAirEquivalenceRatioAndCurrent>{});
+	case PID::OxygenSensor2FuelAirEquivalenceRatioAndCurrent:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor2FuelAirEquivalenceRatioAndCurrent>{});
+	case PID::OxygenSensor3FuelAirEquivalenceRatioAndCurrent:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor3FuelAirEquivalenceRatioAndCurrent>{});
+	case PID::OxygenSensor4FuelAirEquivalenceRatioAndCurrent:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor4FuelAirEquivalenceRatioAndCurrent>{});
+	case PID::OxygenSensor5FuelAirEquivalenceRatioAndCurrent:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor5FuelAirEquivalenceRatioAndCurrent>{});
+	case PID::OxygenSensor6FuelAirEquivalenceRatioAndCurrent:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor6FuelAirEquivalenceRatioAndCurrent>{});
+	case PID::OxygenSensor7FuelAirEquivalenceRatioAndCurrent:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor7FuelAirEquivalenceRatioAndCurrent>{});
+	case PID::OxygenSensor8FuelAirEquivalenceRatioAndCurrent:
+		return visitor(std::integral_constant<PID, PID::OxygenSensor8FuelAirEquivalenceRatioAndCurrent>{});
+	case PID::CatalystTemperatureBank1Sensor1:
+		return visitor(std::integral_constant<PID, PID::CatalystTemperatureBank1Sensor1>{});
+	case PID::CatalystTemperatureBank2Sensor1:
+		return visitor(std::integral_constant<PID, PID::CatalystTemperatureBank2Sensor1>{});
+	case PID::CatalystTemperatureBank1Sensor2:
+		return visitor(std::integral_constant<PID, PID::CatalystTemperatureBank1Sensor2>{});
+	case PID::CatalystTemperatureBank2Sensor2:
+		return visitor(std::integral_constant<PID, PID::CatalystTemperatureBank2Sensor2>{});
+	case PID::SupportedPids2:
+		return visitor(std::integral_constant<PID, PID::SupportedPids2>{});
+	case PID::MonitorStatusThisDriveCycle:
+		return visitor(std::integral_constant<PID, PID::MonitorStatusThisDriveCycle>{});
+	case PID::ControlModuleVoltage:
+		return visitor(std::integral_constant<PID, PID::ControlModuleVoltage>{});
+	case PID::AbsoluteLoadValue:
+		return visitor(std::integral_constant<PID, PID::AbsoluteLoadValue>{});
+	case PID::FuelAirCommandedEquivalenceRatio:
+		return visitor(std::integral_constant<PID, PID::FuelAirCommandedEquivalenceRatio>{});
+	case PID::RelativeThrottlePosition:
+		return visitor(std::integral_constant<PID, PID::RelativeThrottlePosition>{});
+	case PID::AmbientAirTemperature:
+		return visitor(std::integral_constant<PID, PID::AmbientAirTemperature>{});
+	case PID::AbsoluteThrottlePositionB:
+		return visitor(std::integral_constant<PID, PID::AbsoluteThrottlePositionB>{});
+	case PID::AbsoluteThrottlePositionC:
+		return visitor(std::integral_constant<PID, PID::AbsoluteThrottlePositionC>{});
+	case PID::AcceleratorPedalPositionD:
+		return visitor(std::integral_constant<PID, PID::AcceleratorPedalPositionD>{});
+	case PID::AcceleratorPedalPositionE:
+		return visitor(std::integral_constant<PID, PID::AcceleratorPedalPositionE>{});
+	case PID::AcceleratorPedalPositionF:
+		return visitor(std::integral_constant<PID, PID::AcceleratorPedalPositionF>{});
+	case PID::CommandedThrottleActuator:
+		return visitor(std::integral_constant<PID, PID::CommandedThrottleActuator>{});
+	case PID::TimeRunWithMIL:
+		return visitor(std::integral_constant<PID, PID::TimeRunWithMIL>{});
+	case PID::TimeSinceTroubleCodesCleared:
+		return visitor(std::integral_constant<PID, PID::TimeSinceTroubleCodesCleared>{});
+	case PID::MaximumSensorValues:
+		return visitor(std::integral_constant<PID, PID::MaximumSensorValues>{});
+	case PID::MaximumAirFlowRate:
+		return visitor(std::integral_constant<PID, PID::MaximumAirFlowRate>{});
+	case PID::FuelType:
+		return visitor(std::integral_constant<PID, PID::FuelType>{});
+	case PID::EthanolFuelPercentage:
+		return visitor(std::integral_constant<PID, PID::EthanolFuelPercentage>{});
+	case PID::AbsoluteEvapSystemVaporPressure:
+		return visitor(std::integral_constant<PID, PID::AbsoluteEvapSystemVaporPressure>{});
+	case PID::EvapSystemVaporPressure:
+		return visitor(std::integral_constant<PID, PID::EvapSystemVaporPressure>{});
+	case PID::ShortTermSecondaryOxygenSensorTrimBanks1And3:
+		return visitor(std::integral_constant<PID, PID::ShortTermSecondaryOxygenSensorTrimBanks1And3>{});
+	case PID::LongTermSecondaryOxygenSensorTrimBanks1And3:
+		return visitor(std::integral_constant<PID, PID::LongTermSecondaryOxygenSensorTrimBanks1And3>{});
+	case PID::ShortTermSecondaryOxygenSensorTrimBanks2And4:
+		return visitor(std::integral_constant<PID, PID::ShortTermSecondaryOxygenSensorTrimBanks2And4>{});
+	case PID::LongTermSecondaryOxygenSensorTrimBanks2And4:
+		return visitor(std::integral_constant<PID, PID::LongTermSecondaryOxygenSensorTrimBanks2And4>{});
+	case PID::FuelRailAbsolutePressure:
+		return visitor(std::integral_constant<PID, PID::FuelRailAbsolutePressure>{});
+	case PID::RelativeAcceleratorPedalPosition:
+		return visitor(std::integral_constant<PID, PID::RelativeAcceleratorPedalPosition>{});
+	case PID::HybridBatteryPackRemainingLife:
+		return visitor(std::integral_constant<PID, PID::HybridBatteryPackRemainingLife>{});
+	case PID::EngineOilTemperature:
+		return visitor(std::integral_constant<PID, PID::EngineOilTemperature>{});
+	case PID::FuelInjectionTiming:
+		return visitor(std::integral_constant<PID, PID::FuelInjectionTiming>{});
+	case PID::EngineFuelRate:
+		return visitor(std::integral_constant<PID, PID::EngineFuelRate>{});
+	case PID::EmissionRequirements:
+		return visitor(std::integral_constant<PID, PID::EmissionRequirements>{});
+	case PID::SupportedPids3:
+		return visitor(std::integral_constant<PID, PID::SupportedPids3>{});
+	case PID::DemandedPercentTorque:
+		return visitor(std::integral_constant<PID, PID::DemandedPercentTorque>{});
+	case PID::ActualPercentTorque:
+		return visitor(std::integral_constant<PID, PID::ActualPercentTorque>{});
+	case PID::ReferenceTorque:
+		return visitor(std::integral_constant<PID, PID::ReferenceTorque>{});
+	case PID::EnginePercentTorqueData:
+		return visitor(std::integral_constant<PID, PID::EnginePercentTorqueData>{});
+	case PID::AuxiliaryInputOutputSupported:
+		return visitor(std::integral_constant<PID, PID::AuxiliaryInputOutputSupported>{});
+	case PID::MassAirFlowSensor:
+		return visitor(std::integral_constant<PID, PID::MassAirFlowSensor>{});
+	case PID::EngineCoolantTemperature:
+		return visitor(std::integral_constant<PID, PID::EngineCoolantTemperature>{});
+	case PID::IntakeAirTemperatureSensor:
+		return visitor(std::integral_constant<PID, PID::IntakeAirTemperatureSensor>{});
+	case PID::CommandedEGRAndEGRError:
+		return visitor(std::integral_constant<PID, PID::CommandedEGRAndEGRError>{});
+	case PID::CommandedDieselIntakeAirFlowControlAndRelativeIntakeAirFlowPosition:
+		return visitor(std::integral_constant<PID, PID::CommandedDieselIntakeAirFlowControlAndRelativeIntakeAirFlowPosition>{});
+	case PID::ExhaustGasRecirculationTemperature:
+		return visitor(std::integral_constant<PID, PID::ExhaustGasRecirculationTemperature>{});
+	case PID::CommandedThrottleActuatorControlAndRelativeThrottlePosition:
+		return visitor(std::integral_constant<PID, PID::CommandedThrottleActuatorControlAndRelativeThrottlePosition>{});
+	case PID::FuelPressureControlSystem:
+		return visitor(std::integral_constant<PID, PID::FuelPressureControlSystem>{});
+	case PID::InjectionPressureControlSystem:
+		return visitor(std::integral_constant<PID, PID::InjectionPressureControlSystem>{});
+	case PID::TurbochargerCompressorInletPressure:
+		return visitor(std::integral_constant<PID, PID::TurbochargerCompressorInletPressure>{});
+	case PID::BoostPressureControl:
+		return visitor(std::integral_constant<PID, PID::BoostPressureControl>{});
+	case PID::VariableGeometryTurboControl:
+		return visitor(std::integral_constant<PID, PID::VariableGeometryTurboControl>{});
+	case PID::WastegateControl:
+		return visitor(std::integral_constant<PID, PID::WastegateControl>{});
+	case PID::ExhaustPressure:
+		return visitor(std::integral_constant<PID, PID::ExhaustPressure>{});
+	case PID::TurbochargerRPM:
+		return visitor(std::integral_constant<PID, PID::TurbochargerRPM>{});
+	case PID::TurbochargerTemperature:
+		return visitor(std::integral_constant<PID, PID::TurbochargerTemperature>{});
+	case PID::TurbochargerTemperature:
+		return visitor(std::integral_constant<PID, PID::TurbochargerTemperature>{});
+	case PID::ChargeAirCoolerTemperature:
+		return visitor(std::integral_constant<PID, PID::ChargeAirCoolerTemperature>{});
+	case PID::ExhaustGasTemperatureBank1:
+		return visitor(std::integral_constant<PID, PID::ExhaustGasTemperatureBank1>{});
+	case PID::ExhaustGasTemperatureBank2:
+		return visitor(std::integral_constant<PID, PID::ExhaustGasTemperatureBank2>{});
+	case PID::DieselParticulateFilter1:
+		return visitor(std::integral_constant<PID, PID::DieselParticulateFilter1>{});
+	case PID::DieselParticulateFilter2:
+		return visitor(std::integral_constant<PID, PID::DieselParticulateFilter2>{});
+	case PID::DieselParticulateFilterTemperature:
+		return visitor(std::integral_constant<PID, PID::DieselParticulateFilterTemperature>{});
+	case PID::NOxNTEControlAreaStatus:
+		return visitor(std::integral_constant<PID, PID::NOxNTEControlAreaStatus>{});
+	case PID::PMNTEControlAreaStatus:
+		return visitor(std::integral_constant<PID, PID::PMNTEControlAreaStatus>{});
+	case PID::EngineRunTime:
+		return visitor(std::integral_constant<PID, PID::EngineRunTime>{});
+	case PID::SupportedPids4:
+		return visitor(std::integral_constant<PID, PID::SupportedPids4>{});
+	case PID::EngineRunTimeAECD1:
+		return visitor(std::integral_constant<PID, PID::EngineRunTimeAECD1>{});
+	case PID::EngineRunTimeAECD2:
+		return visitor(std::integral_constant<PID, PID::EngineRunTimeAECD2>{});
+	case PID::NOxSensor:
+		return visitor(std::integral_constant<PID, PID::NOxSensor>{});
+	case PID::ManifoldSurfaceTemperature:
+		return visitor(std::integral_constant<PID, PID::ManifoldSurfaceTemperature>{});
+	case PID::NOxReagentSystem:
+		return visitor(std::integral_constant<PID, PID::NOxReagentSystem>{});
+	case PID::ParticulateMatterSensor:
+		return visitor(std::integral_constant<PID, PID::ParticulateMatterSensor>{});
+	case PID::IntakeManifoldAbsolutePressure:
+		return visitor(std::integral_constant<PID, PID::IntakeManifoldAbsolutePressure>{});
+	case PID::SCRInduceSystem:
+		return visitor(std::integral_constant<PID, PID::SCRInduceSystem>{});
+	case PID::AECDRunTime11_15:
+		return visitor(std::integral_constant<PID, PID::AECDRunTime11_15>{});
+	case PID::AECDRunTime16_20:
+		return visitor(std::integral_constant<PID, PID::AECDRunTime16_20>{});
+	case PID::DieselAftertreatment:
+		return visitor(std::integral_constant<PID, PID::DieselAftertreatment>{});
+	case PID::O2Sensor:
+		return visitor(std::integral_constant<PID, PID::O2Sensor>{});
+	case PID::ThrottlePositionG:
+		return visitor(std::integral_constant<PID, PID::ThrottlePositionG>{});
+	case PID::EngineFrictionPercentTorque:
+		return visitor(std::integral_constant<PID, PID::EngineFrictionPercentTorque>{});
+	case PID::PMSensorBank1And2:
+		return visitor(std::integral_constant<PID, PID::PMSensorBank1And2>{});
+	case PID::WWH_OBDVehicleOBDSystemInformation1:
+		return visitor(std::integral_constant<PID, PID::WWH_OBDVehicleOBDSystemInformation1>{});
+	case PID::WWH_OBDVehicleOBDSystemInformation2:
+		return visitor(std::integral_constant<PID, PID::WWH_OBDVehicleOBDSystemInformation2>{});
+	case PID::FuelSystemControl:
+		return visitor(std::integral_constant<PID, PID::FuelSystemControl>{});
+	case PID::WWH_OBDVehicleOBDCountersSupport:
+		return visitor(std::integral_constant<PID, PID::WWH_OBDVehicleOBDCountersSupport>{});
+	case PID::NOxWarningAndInducementSystem:
+		return visitor(std::integral_constant<PID, PID::NOxWarningAndInducementSystem>{});
+	case PID::ExhaustGasTemperatureSensor1:
+		return visitor(std::integral_constant<PID, PID::ExhaustGasTemperatureSensor1>{});
+	case PID::ExhaustGasTemperatureSensor2:
+		return visitor(std::integral_constant<PID, PID::ExhaustGasTemperatureSensor2>{});
+	case PID::HybridEVVehicleSystemData:
+		return visitor(std::integral_constant<PID, PID::HybridEVVehicleSystemData>{});
+	case PID::DieselExhaustFluidSensorData:
+		return visitor(std::integral_constant<PID, PID::DieselExhaustFluidSensorData>{});
+	case PID::O2SensorData:
+		return visitor(std::integral_constant<PID, PID::O2SensorData>{});
+	case PID::EngineFuelRate:
+		return visitor(std::integral_constant<PID, PID::EngineFuelRate>{});
+	case PID::EngineExhaustFlowRate:
+		return visitor(std::integral_constant<PID, PID::EngineExhaustFlowRate>{});
+	case PID::FuelSystemPercentageUse:
+		return visitor(std::integral_constant<PID, PID::FuelSystemPercentageUse>{});
+	case PID::SupportedPids5:
+		return visitor(std::integral_constant<PID, PID::SupportedPids5>{});
+	case PID::NOxSensorCorrectedData:
+		return visitor(std::integral_constant<PID, PID::NOxSensorCorrectedData>{});
+	case PID::CylinderFuelRate:
+		return visitor(std::integral_constant<PID, PID::CylinderFuelRate>{});
+	case PID::EvapSystemVaporPressure:
+		return visitor(std::integral_constant<PID, PID::EvapSystemVaporPressure>{});
+	case PID::TransmissionActualGear:
+		return visitor(std::integral_constant<PID, PID::TransmissionActualGear>{});
+	case PID::DieselExhaustFluidDosing:
+		return visitor(std::integral_constant<PID, PID::DieselExhaustFluidDosing>{});
+	case PID::Odometer:
+		return visitor(std::integral_constant<PID, PID::Odometer>{});
+	case PID::SupportedPids6:
+		return visitor(std::integral_constant<PID, PID::SupportedPids6>{});
+	}
+}
 
 } /* namespace m3 */
 

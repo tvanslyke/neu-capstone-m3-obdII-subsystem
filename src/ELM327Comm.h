@@ -1,20 +1,19 @@
 #ifndef M3_ELM327_COMM_H
 #define M3_ELM327_COMM_H
 
+#include "ArduinoFix.h"
 #include <string_view>
 #include <climits>
+#include <array>
+#include <cstring>
 #include <SPI.h>
+#include "PortMutex.h"
+
+#define PIN_LINK_SPI_CS 2
+#define PIN_LINK_SPI_READY 13
+#define SPI_FREQ 1000000
 
 namespace m3 {
-
-
-namespace spi {
-
-char spi_receive_byte() {
-	
-}
-
-} /* namespace spi */
 
 template <std::size_t N>
 constexpr std::uint_least64_t encode_str(const char (&cmd)[N]) {
@@ -25,7 +24,7 @@ constexpr std::uint_least64_t encode_str(const char (&cmd)[N]) {
 		encoding <<= 8u;
 		encoding |= static_cast<unsigned char>(cmd[i]);
 	}
-	return encoding
+	return encoding;
 }
 
 constexpr std::array<char, 9u> decode_str(std::uint_least64_t encoding) {
@@ -147,7 +146,56 @@ enum class ELM327_AT_CMD: std::uint_least64_t {
 	MonitorPGN                   = encode_str("MP"),
 };
 
-enum class ELM327_OBD_CMD: std::uint_least64_t {
+constexpr std::array<char, 9u> at_command_string(ELM327_AT_CMD cmd) {
+	return decode_str(static_cast<std::uint_least64_t>(cmd));
+}
+
+
+inline bool spi_is_ready() {
+	return digitalRead(PIN_LINK_SPI_READY) == LOW;
+}
+
+inline bool spi_is_done() {
+	return digitalRead(PIN_LINK_SPI_READY) == HIGH;
+}
+
+inline void wait_for_spi_done() {
+	if(not spi_is_done()) {
+		do {
+			delay(1);
+		} while(not spi_is_done());
+	}
+}
+
+inline void wait_for_spi_ready() {
+	if(not spi_is_ready()) {
+		do {
+			delay(1);
+		} while(not spi_is_ready());
+	}
+}
+
+
+struct ScopedSPITransaction {
+	void lock() const {
+		wait_for_spi_ready();
+	}
+
+	void unlock() const {
+		wait_for_spi_done();
+	}
+
+};
+
+template <auto PinNum>
+struct ScopedLowPin {
+	void lock() const {
+                digitalWrite(PinNum, LOW);
+	}
+
+	void unlock() const {
+                digitalWrite(PinNum, HIGH);
+	}
 
 };
 
@@ -163,6 +211,77 @@ struct ELM327Comm {
 	ELM327Comm() = default;
 
 	
+
+	static void send_raw_command(std::string_view cmd) {
+		char header[] = "$OBD";
+		char carriage_return = '\r';
+		char tail = '\x1B';
+		PortMutex port_mux;
+		ScopedLowPin<PIN_LINK_SPI_CS> link_pin;
+		{
+			auto lock_mux = std::lock_guard(port_mux);
+			auto hold_low = std::lock_guard(link_pin);
+			delay(1);
+			SPI.writeBytes(reinterpret_cast<std::uint8_t*>(header), 4u);
+			std::uint8_t buff[64u];
+			while(cmd.size() >= sizeof(buff)) {
+				std::memcpy(buff, cmd.data(), sizeof(buff));
+				SPI.writeBytes(buff, sizeof(buff));
+				cmd.remove_prefix(sizeof(buff));
+			}
+			std::memcpy(buff, cmd.data(), cmd.size());
+			SPI.writeBytes(buff, cmd.size());
+			SPI.writeBytes(reinterpret_cast<std::uint8_t*>(&carriage_return), 1);
+			SPI.writeBytes(reinterpret_cast<std::uint8_t*>(&tail), 1);
+			delay(1);
+		}
+	}
+
+	template <class DestIt>
+	static void receive_command_response(DestIt dest) {
+		constexpr char header[] = "$OBD";
+		const char* header_pos = header;
+		PortMutex port_mux;
+		ScopedLowPin<PIN_LINK_SPI_CS> link_pin;
+		ScopedSPITransaction trans;
+		auto transaction_lock = std::lock_guard(trans);
+		for(bool done = false; not done; not done ? wait_for_spi_ready() : (void)0) {
+			auto hold_mux = std::lock_guard(port_mux);
+			auto hold_low = std::lock_guard(link_pin);
+			while(spi_is_ready()) {
+				char c = SPI.transfer(' ');
+				if(c == '\0' && c == '\xFF') {
+					continue;
+				}
+				if(!done) {
+					done = (c == '\x09');
+				}
+				if(done) {
+					continue;
+				}
+				if(*header_pos != '\0') {
+					if(*header_pos == c) {
+						++header_pos;
+					} else {
+						dest = std::copy(header, header_pos, dest);
+						*dest++ = c;
+						header_pos = header;
+					}
+				} else {
+					*dest++ = c;
+				}
+			}
+		}
+	}
+
+	static void initialize_spi() {
+		pinMode(PIN_LINK_SPI_READY, INPUT);
+		pinMode(PIN_LINK_SPI_CS, OUTPUT);
+		digitalWrite(PIN_LINK_SPI_CS, HIGH);
+		SPI.begin();
+		SPI.setFrequency(1000000);
+	}
+private:
 };
 
 
